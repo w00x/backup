@@ -1,0 +1,10 @@
+myhostconn:               #nombre de la instancia
+  host:     ''            #host donde se encuentra la instancia
+  user:     ''            #usuario de la instancia, solo usa conexiones por SSH Key
+  myinstanceconn:         #nombre del entorno
+    dbname:           ''  #nombre de la DB externa
+    dbuser:           ''  #usuario de la DB externa
+    dbpassword:       ''  #password de la DB externa
+    local_dbuser:     ''  #usuario de la DB local
+    local_dbname:     ''  #nombre de la DB local
+    local_dbpassword: ''  #password  de la DB local

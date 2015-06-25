@@ -38,36 +38,40 @@ def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename)
   puts "Archivo de backup eliminado satisfactoriamente"
 end
 
-con = YAML.load(File.read('./config.yml'))
+if(File.exist?('./config.yml'))
+  con = YAML.load(File.read('./config.yml'))
 
-if(ARGV.size == 2)
-  if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
-    user = con[ARGV[0]]['user']
-    host = con[ARGV[0]]['host']
-    config = con[ARGV[0]][ARGV[1]]
-    filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+  if(ARGV.size == 2)
+    if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
+      user = con[ARGV[0]]['user']
+      host = con[ARGV[0]]['host']
+      config = con[ARGV[0]][ARGV[1]]
+      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
 
-    generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
-    download_external_backup(user,host,filename)
-    delete_external_backup(host,user,filename)
+      generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
+      download_external_backup(user,host,filename)
+      delete_external_backup(host,user,filename)
+    else
+      puts "No se encontraron los parametros en la configuración"
+    end
+  elsif(ARGV.size == 3 && ARGV[2] == 'apply')
+    if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
+      user = con[ARGV[0]]['user']
+      host = con[ARGV[0]]['host']
+      config = con[ARGV[0]][ARGV[1]]
+      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+
+      generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
+      download_external_backup(user,host,filename)
+      delete_external_backup(host,user,filename)
+      apply_backup(config['local_dbuser'], config['local_dbname'], config['local_dbpassword'], filename)
+    else
+      puts "No se encontraron los parametros en la configuración"
+    end
   else
-    puts "No se encontraron los parametros en la configuración"
-  end
-elsif(ARGV.size == 3 && ARGV[2] == 'apply')
-  if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
-    user = con[ARGV[0]]['user']
-    host = con[ARGV[0]]['host']
-    config = con[ARGV[0]][ARGV[1]]
-    filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
-
-    generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
-    download_external_backup(user,host,filename)
-    delete_external_backup(host,user,filename)
-    apply_backup(config['local_dbuser'], config['local_dbname'], config['local_dbpassword'], filename)
-  else
-    puts "No se encontraron los parametros en la configuración"
+    puts "Faltan parametros"
+    puts "./backup [instance] [environment] (apply)"
   end
 else
-  puts "Faltan parametros"
-  puts "./backup [instance] [environment] (apply)"
+  puts "Falta archivo de configuracion, verifica que el archivo config.yml exista, de lo contrario renombra el archivo _config.yml"
 end
