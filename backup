@@ -1,0 +1,73 @@
+#!/usr/bin/ruby
+
+require 'yaml'
+require 'net/ssh'
+
+def generate_external_backup(host,user,dbname,dbuser,dbpassword,filename)
+  puts "Conectando con el servidor #{host}"
+  Net::SSH.start(host, user) do |ssh|
+    puts "Generando dump"
+    ssh.exec("mysqldump -u#{dbuser} -p#{dbpassword} #{dbname} | bzip2  > /tmp/#{filename}")
+    puts "Archivo generado satisfactoriamente: /tmp/#{filename}"
+    puts "Desconectando"
+  end
+end
+
+def download_external_backup(user,host,filename)
+  puts "Copiando archivo del host remoto"
+  system("scp #{user}@#{host}:/tmp/#{filename} /tmp/#{filename}")
+  puts "Archivo copiado satisfactoriamente: /tmp/#{filename}"
+end
+
+def delete_external_backup(host,user,filename)
+  puts "Conectando con el servidor #{host} para eliminar backup remoto"
+  Net::SSH.start(host, user) do |ssh|
+    puts "Eliminando backup remoto"
+    ssh.exec("rm /tmp/#{filename}")
+    puts "Backup eliminado satisfactoriamente: /tmp/#{filename}"
+    puts "Desconectando"
+  end
+end
+
+def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename)
+  puts "Aplicando backup #{filename} en #{local_dbname}"
+  system("bunzip2 < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname}")
+  puts "Backup cargada satisfactoriamente"
+  puts "Eliminando archivo de backup"
+  system("rm /tmp/#{filename}")
+  puts "Archivo de backup eliminado satisfactoriamente"
+end
+
+con = YAML.load(File.read('./config.yml'))
+
+if(ARGV.size == 2)
+  if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
+    user = con[ARGV[0]]['user']
+    host = con[ARGV[0]]['host']
+    config = con[ARGV[0]][ARGV[1]]
+    filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+
+    generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
+    download_external_backup(user,host,filename)
+    delete_external_backup(host,user,filename)
+  else
+    puts "No se encontraron los parametros en la configuración"
+  end
+elsif(ARGV.size == 3 && ARGV[2] == 'apply')
+  if con.key?(ARGV[0]) && con[ARGV[0]].key?(ARGV[1])
+    user = con[ARGV[0]]['user']
+    host = con[ARGV[0]]['host']
+    config = con[ARGV[0]][ARGV[1]]
+    filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+
+    generate_external_backup(host,user,config['dbname'],config['dbuser'],config['dbpassword'],filename)
+    download_external_backup(user,host,filename)
+    delete_external_backup(host,user,filename)
+    apply_backup(config['local_dbuser'], config['local_dbname'], config['local_dbpassword'], filename)
+  else
+    puts "No se encontraron los parametros en la configuración"
+  end
+else
+  puts "Faltan parametros"
+  puts "./backup [instance] [environment] (apply)"
+end

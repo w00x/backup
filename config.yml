@@ -1,0 +1,10 @@
+myinstancename:
+  host: ''
+  user: ''
+  myenvironmentname:
+    dbname:           ''
+    dbuser:           ''
+    dbpassword:       ''
+    local_dbuser:     ''
+    local_dbname:     ''
+    local_dbpassword: ''
