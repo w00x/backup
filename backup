@@ -33,9 +33,6 @@ def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename)
   puts "Aplicando backup #{filename} en #{local_dbname}"
   system("bunzip2 < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname}")
   puts "Backup cargada satisfactoriamente"
-  puts "Eliminando archivo de backup"
-  system("rm /tmp/#{filename}")
-  puts "Archivo de backup eliminado satisfactoriamente"
 end
 
 if(File.exist?('./config.yml'))
