@@ -3,6 +3,9 @@ require "redis-namespace"
 
 def backup_redis origin_env, destination_env
   redis_conn = Redis.new(:host => "localhost", :port => 6381)
+  if origin_env == 'mafor'
+    origin_env = 'production'
+  end
   $redis_prod = Redis::Namespace.new(origin_env, :redis => redis_conn)
   $redis_local = Redis::Namespace.new(destination_env, :redis => redis_conn)
 

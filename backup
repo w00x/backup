@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/home/thomas/.rvm/rubies/ruby-2.1.2/bin/ruby
 
 require 'yaml'
 require 'net/ssh'
