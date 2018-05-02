@@ -1,0 +1,18 @@
+chita:
+  host: ''
+  user: ''
+  dbhost: ''
+  qa:
+    dbname:           ''
+    dbuser:           ''
+    dbpassword:       ''
+    local_dbuser:     ''
+    local_dbname:     ''
+    local_dbpassword: ''
+  production:
+    dbname:           ''
+    dbuser:           ''
+    dbpassword:       ''
+    local_dbuser:     ''
+    local_dbname:     ''
+    local_dbpassword: ''
