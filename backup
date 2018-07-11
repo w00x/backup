@@ -34,9 +34,9 @@ end
 
 def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename, filename_redis, redis_option, redis_origin, redis_destination)
   puts "Aplicando backup #{filename} en #{local_dbname}"
-  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} drop #{local_dbname}")
-  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} create #{local_dbname}")
-  system("bunzip2 < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname}")
+  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} drop #{local_dbname} --protocol=TCP")
+  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} create #{local_dbname} --protocol=TCP")
+  system("bunzip2 < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname} --protocol=TCP")
   if redis_option
     system("sudo service redis-server stop")
     system("sudo cp /tmp/#{filename_redis} /var/lib/redis/dump.rdb")
