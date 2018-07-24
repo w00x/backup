@@ -8,7 +8,7 @@ def generate_external_backup(host,user,dbname,dbuser,dbpassword, dbhost,filename
   puts "Conectando con el servidor #{host}"
   Net::SSH.start(host, user) do |ssh|
     puts "Generando dump"
-    ssh.exec("mysqldump -h#{dbhost}  -u#{dbuser} -p#{dbpassword} #{dbname} | bzip2  > /tmp/#{filename}")
+    ssh.exec("mysqldump -h#{dbhost}  -u#{dbuser} -p#{dbpassword} #{dbname} | gzip  > /tmp/#{filename}")
     ssh.exec("redis-cli SAVE") if redis_option
     puts "Archivo generado satisfactoriamente: /tmp/#{filename}"
     puts "Desconectando"
@@ -36,7 +36,7 @@ def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename, filenam
   puts "Aplicando backup #{filename} en #{local_dbname}"
   system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} drop #{local_dbname} --protocol=TCP")
   system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} create #{local_dbname} --protocol=TCP")
-  system("bunzip2 < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname} --protocol=TCP")
+  system("gzip -d < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname} --protocol=TCP")
   if redis_option
     system("sudo service redis-server stop")
     system("sudo cp /tmp/#{filename_redis} /var/lib/redis/dump.rdb")
@@ -56,7 +56,7 @@ if(File.exist?('./config.yml'))
       config = con[ARGV[0]][ARGV[1]]
       dbhost = con[ARGV[0]]['dbhost']
 
-      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.gz"
       filename_redis = 'dump_redis'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".rdb"
       redis_option = config['redis_env'].nil? ? false : true
 
@@ -73,7 +73,7 @@ if(File.exist?('./config.yml'))
       config = con[ARGV[0]][ARGV[1]]
       dbhost = con[ARGV[0]]['dbhost']
 
-      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.bz2"
+      filename = 'dump_'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".sql.gz"
       filename_redis = 'dump_redis'+config['dbname']+'_'+Time.now.strftime('%d%m%Y%H%M%S%L')+".rdb"
       redis_option = config['redis_env'].nil? ? false : true
 
