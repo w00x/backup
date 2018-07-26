@@ -8,7 +8,7 @@ def generate_external_backup(host,user,dbname,dbuser,dbpassword, dbhost,filename
   puts "Conectando con el servidor #{host}"
   Net::SSH.start(host, user) do |ssh|
     puts "Generando dump"
-    ssh.exec("mysqldump -h#{dbhost}  -u#{dbuser} -p#{dbpassword} #{dbname} | gzip  > /tmp/#{filename}")
+    ssh.exec("mysqldump -h#{dbhost}  -u#{dbuser} -p#{dbpassword} #{dbname} | gzip > /tmp/#{filename}")
     ssh.exec("redis-cli SAVE") if redis_option
     puts "Archivo generado satisfactoriamente: /tmp/#{filename}"
     puts "Desconectando"
@@ -34,7 +34,7 @@ end
 
 def apply_backup(local_dbuser, local_dbname, local_dbpassword, filename, filename_redis, redis_option, redis_origin, redis_destination)
   puts "Aplicando backup #{filename} en #{local_dbname}"
-  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} drop #{local_dbname} --protocol=TCP")
+  system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} -f drop #{local_dbname} --protocol=TCP")
   system("mysqladmin -u#{local_dbuser} -p#{local_dbpassword} create #{local_dbname} --protocol=TCP")
   system("gzip -d < /tmp/#{filename} | mysql -u#{local_dbuser} -p#{local_dbpassword} #{local_dbname} --protocol=TCP")
   if redis_option
