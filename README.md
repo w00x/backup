@@ -11,8 +11,8 @@ Install gems
 
 Only download backup:
 
-`bundle exec ruby backup.rb mercat stage`
+`bundle exec ruby backup.rb config_name stage`
 
 Download backup and apply in local db:
 
-`bundle exec ruby backup.rb mercat stage apply`
+`bundle exec ruby backup.rb config_name stage apply`
