@@ -31,8 +31,8 @@ db_adapter = Adapters::Db::DbFactory.build(adapter, host, user,
                                            config['local_dbpassword'],
                                            filename, private_key_path)
 
-db_adapter.generate_external_backup
+db_adapter.generate_external_backup(ARGV[2])
 download_external_backup(user, host, filename, private_key_path)
 delete_external_backup(host, user, filename, private_key_path)
 
-db_adapter.apply_backup if ARGV.size == 3 && ARGV[2] == 'apply'
+db_adapter.apply_backup if ARGV.size > 2 && (ARGV[2] == 'apply' || ARGV[3] == 'apply')

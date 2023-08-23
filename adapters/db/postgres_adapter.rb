@@ -3,8 +3,9 @@ require_relative 'db_adapter'
 module Adapters
   module Db
     class PostgresAdapter < DbAdapter
-      def dump_command
-        "PGPASSWORD='#{@dbpassword}' pg_dump -U #{@dbuser} -h #{@dbhost} "\
+      def dump_command(schema)
+        schema_option = "-n #{schema}" if schema
+        "PGPASSWORD='#{@dbpassword}' pg_dump -U #{@dbuser} -h #{@dbhost} #{schema_option} "\
         "#{@dbname} | gzip > /tmp/#{@filename}"
       end
 
